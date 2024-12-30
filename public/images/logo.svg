@@ -1,0 +1,30 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="24" cy="24" r="24" fill="#FF9500"/>
+  
+  <!-- 狐狸脸部 - 更圆润的形状 -->
+  <path d="M24 14C17 14 12 20 12 28C12 36 18 40 24 40C30 40 36 36 36 28C36 20 31 14 24 14Z" fill="white"/>
+  
+  <!-- 内部阴影 -->
+  <path d="M24 15C18 15 13 20 13 28C13 35 18 39 24 39C30 39 35 35 35 28C35 20 30 15 24 15Z" fill="#FFA726"/>
+  
+  <!-- 耳朵 - 更可爱的形状 -->
+  <path d="M15 12C15 12 16 16 18 18C20 20 22 20 22 20C22 20 19 14 15 12Z" fill="#FF5722"/>
+  <path d="M33 12C33 12 32 16 30 18C28 20 26 20 26 20C26 20 29 14 33 12Z" fill="#FF5722"/>
+  
+  <!-- 眼睛 - 更大更可爱 -->
+  <circle cx="19" cy="26" r="3" fill="#37474F"/>
+  <circle cx="29" cy="26" r="3" fill="#37474F"/>
+  <circle cx="19" cy="25" r="1" fill="white"/>
+  <circle cx="29" cy="25" r="1" fill="white"/>
+  
+  <!-- 鼻子 - 小巧可爱 -->
+  <circle cx="24" cy="29" r="1.5" fill="#37474F"/>
+  
+  <!-- 笑容 - 更温暖 -->
+  <path d="M20 31C22 33 26 33 28 31" stroke="#37474F" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- 代码符号 - 更精致 -->
+  <path d="M18 35L16 37L18 39" stroke="#37474F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30 35L32 37L30 39" stroke="#37474F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg> 

@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+python-dotenv
+requests
+dashscope
+sqlite3 

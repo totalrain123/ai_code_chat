@@ -10,7 +10,10 @@
           <button class="history-btn" @click="showHistory = true">
             历史记录
           </button>
-          <ModelSelector 
+          <button class="history-btn" @click="showTasks = true">
+            任务管理
+          </button>
+          <ModelSelector
             :models="availableModels"
             v-model="selectedModel"
           />
@@ -34,9 +37,13 @@
         </button>
       </div>
     </div>
-    <HistoryPanel 
+    <HistoryPanel
       :is-open="showHistory"
       @close="closeHistory"
+    />
+    <TaskPanel
+      :is-open="showTasks"
+      @close="closeTasks"
     />
   </div>
 </template>
@@ -46,13 +53,15 @@ import { ref } from 'vue'
 import ChatWindow from './components/ChatWindow.vue'
 import ModelSelector from './components/ModelSelector.vue'
 import HistoryPanel from './components/HistoryPanel.vue'
+import TaskPanel from './components/TaskPanel.vue'
 import { sendChatMessage } from './services/api'
 
 export default {
   components: {
     ChatWindow,
     ModelSelector,
-    HistoryPanel
+    HistoryPanel,
+    TaskPanel
   },
   setup() {
     const messages = ref([])
@@ -65,6 +74,7 @@ export default {
       { id: 'wenxin', name: '文心一言' }
     ])
     const showHistory = ref(false)
+    const showTasks = ref(false)
 
     const sendMessage = async () => {
       if (!userInput.value.trim() || loading.value) return
@@ -103,6 +113,10 @@ export default {
       showHistory.value = false
     }
 
+    const closeTasks = () => {
+      showTasks.value = false
+    }
+
     return {
       messages,
       userInput,
@@ -111,7 +125,9 @@ export default {
       availableModels,
       sendMessage,
       showHistory,
-      closeHistory
+      closeHistory,
+      showTasks,
+      closeTasks
     }
   }
 }

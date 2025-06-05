@@ -27,4 +27,34 @@ export const getConversations = async () => {
     console.error('API Error:', error)
     throw error
   }
-} 
+}
+
+export const createTask = async (payload) => {
+  try {
+    const response = await api.post('/tasks', payload)
+    return response.data
+  } catch (error) {
+    console.error('API Error:', error)
+    throw error
+  }
+}
+
+export const getTasks = async () => {
+  try {
+    const response = await api.get('/tasks')
+    return response.data
+  } catch (error) {
+    console.error('API Error:', error)
+    throw error
+  }
+}
+
+export const updateTaskStatus = async (id, status) => {
+  try {
+    const response = await api.put(`/tasks/${id}`, null, { params: { status } })
+    return response.data
+  } catch (error) {
+    console.error('API Error:', error)
+    throw error
+  }
+}

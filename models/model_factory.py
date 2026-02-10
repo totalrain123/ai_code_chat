@@ -1,30 +1,32 @@
 import os
+from importlib import import_module
 from typing import Dict, List, Optional, Type, TypedDict
 from .base_model import BaseAIModel
-from .hunyuan_model import HunyuanModel
-from .qianwen_model import QianwenModel
-from .wenxin_model import WenxinModel
 
 class ModelConfig(TypedDict):
     name: str
-    model_class: Type[BaseAIModel]
+    module: str
+    class_name: str
     required_env: List[str]
 
 class ModelFactory:
     _models: Dict[str, ModelConfig] = {
         "hunyuan": {
             "name": "腾讯混元",
-            "model_class": HunyuanModel,
+            "module": "models.hunyuan_model",
+            "class_name": "HunyuanModel",
             "required_env": ["TENCENT_API_KEY", "TENCENT_API_SECRET"]
         },
         "qianwen": {
             "name": "通义千问",
-            "model_class": QianwenModel,
+            "module": "models.qianwen_model",
+            "class_name": "QianwenModel",
             "required_env": ["ALIBABA_API_KEY"]
         },
         "wenxin": {
             "name": "文心一言",
-            "model_class": WenxinModel,
+            "module": "models.wenxin_model",
+            "class_name": "WenxinModel",
             "required_env": ["BAIDU_API_KEY", "BAIDU_SECRET_KEY"]
         }
     }
@@ -114,6 +116,18 @@ class ModelFactory:
         return options
 
     @classmethod
+    def _load_model_class(cls, model_name: str) -> Type[BaseAIModel]:
+        model_meta = cls._models[model_name]
+        try:
+            module = import_module(model_meta["module"])
+            model_class = getattr(module, model_meta["class_name"])
+            return model_class
+        except (ImportError, AttributeError) as exc:
+            raise ValueError(
+                f"Model dependency is missing or broken: {model_name}"
+            ) from exc
+
+    @classmethod
     def get_model(cls, model_name: str) -> BaseAIModel:
         if model_name not in cls._models:
             raise ValueError(f"Unsupported model: {model_name}")
@@ -127,5 +141,5 @@ class ModelFactory:
                 f"Model is not configured: {model_name}. Missing env: {', '.join(missing_env)}"
             )
 
-        model_class = cls._models[model_name]["model_class"]
+        model_class = cls._load_model_class(model_name)
         return model_class()

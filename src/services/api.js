@@ -19,6 +19,16 @@ export const sendChatMessage = async (payload) => {
   }
 }
 
+export const getModelConfigs = async () => {
+  try {
+    const response = await api.get('/models')
+    return response.data
+  } catch (error) {
+    console.error('API Error:', error)
+    throw error
+  }
+}
+
 export const getConversations = async () => {
   try {
     const response = await api.get('/conversations')

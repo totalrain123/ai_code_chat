@@ -1,6 +1,6 @@
 <template>
-  <div class="chat-window">
-    <div class="messages" ref="messagesContainer">
+  <div ref="messagesContainer" class="chat-window">
+    <div class="messages">
       <MessageItem
         v-for="(message, index) in messages"
         :key="index"
@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import MessageItem from './MessageItem.vue'
 
 export default {
@@ -34,13 +34,14 @@ export default {
   setup(props) {
     const messagesContainer = ref(null)
 
-    watch(() => props.messages.length, () => {
-      setTimeout(() => {
-        if (messagesContainer.value) {
-          messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-        }
-      }, 100)
-    })
+    const scrollToBottom = async () => {
+      await nextTick()
+      if (!messagesContainer.value) return
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+
+    watch(() => props.messages.length, scrollToBottom)
+    watch(() => props.loading, scrollToBottom)
 
     return {
       messagesContainer

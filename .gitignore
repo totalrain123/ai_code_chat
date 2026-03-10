@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+*.db
+chat_history.db
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+
+# Local environment
+.env

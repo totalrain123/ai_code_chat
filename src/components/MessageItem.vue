@@ -1,24 +1,51 @@
 <template>
-  <div 
-    class="message-item"
-    :class="messageClass"
-  >
+  <div class="message-item" :class="messageClass">
     <div class="avatar">
-      {{ message.role === 'user' ? '👤' : '🦊' }}
+      {{ message.role === 'user' ? '👤' : message.role === 'system' ? '⚠️' : '🤖' }}
     </div>
-    <div class="content" v-if="message.role === 'user'">
+    <div v-if="message.role === 'user'" class="content">
       {{ message.content }}
     </div>
-    <div class="content code-content" v-else v-html="formattedContent">
-    </div>
+    <div v-else class="content code-content" v-html="formattedContent" @click="handleContentClick" />
   </div>
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
 import { marked } from 'marked'
+
+const highlightCode = (code, language) => {
+  const normalized = (language || '').toLowerCase()
+  if (normalized && hljs.getLanguage(normalized)) {
+    return hljs.highlight(code, { language: normalized }).value
+  }
+  return hljs.highlightAuto(code).value
+}
+
+const safeEncode = (text) => encodeURIComponent(text || '')
+
+marked.setOptions({
+  gfm: true,
+  breaks: true
+})
+
+const renderer = new marked.Renderer()
+renderer.code = (token) => {
+  const language = token.lang || 'plaintext'
+  const source = token.text || ''
+  const highlighted = highlightCode(source, language)
+  return `
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">${language}</span>
+        <button class="copy-btn" data-code="${safeEncode(source)}">复制代码</button>
+      </div>
+      <pre><code class="hljs language-${language}">${highlighted}</code></pre>
+    </div>
+  `
+}
 
 export default {
   props: {
@@ -35,62 +62,31 @@ export default {
       'system-message': props.message.role === 'system'
     }))
 
-    marked.setOptions({
-      highlight: function(code, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-          return hljs.highlight(code, { language: lang }).value
-        }
-        return hljs.highlightAuto(code).value
-      },
-      breaks: true
-    })
-
     const formattedContent = computed(() => {
-      if (props.message.role !== 'assistant') return props.message.content
-      
-      // 处理代码块，添加复制按钮和语言标签
-      const content = props.message.content.replace(/```(\w+)?([\s\S]+?)```/g, (match, lang, code) => {
-        const language = lang || 'plaintext'
-        const highlighted = hljs.highlight(code.trim(), { language }).value
-        return `
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">${language}</span>
-              <button class="copy-btn" data-code="${encodeURIComponent(code.trim())}">
-                复制代码
-              </button>
-            </div>
-            <pre><code class="hljs language-${language}">${highlighted}</code></pre>
-          </div>
-        `
-      })
-      
-      return marked(content)
+      return marked.parse(props.message.content || '', { renderer })
     })
 
-    // 添加复制功能
-    onMounted(() => {
-      document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('.copy-btn')
-        if (!btn) return
+    const handleContentClick = async (event) => {
+      const button = event.target.closest('.copy-btn')
+      if (!button) return
 
-        const code = decodeURIComponent(btn.dataset.code)
-        try {
-          await navigator.clipboard.writeText(code)
-          btn.textContent = '已复制！'
-          setTimeout(() => {
-            btn.textContent = '复制代码'
-          }, 2000)
-        } catch (err) {
-          console.error('复制失败:', err)
-          btn.textContent = '复制失败'
-        }
-      })
-    })
+      const code = decodeURIComponent(button.dataset.code || '')
+      try {
+        await navigator.clipboard.writeText(code)
+        button.textContent = '已复制'
+        setTimeout(() => {
+          button.textContent = '复制代码'
+        }, 1200)
+      } catch (error) {
+        console.error('复制失败:', error)
+        button.textContent = '复制失败'
+      }
+    }
 
     return {
       messageClass,
-      formattedContent
+      formattedContent,
+      handleContentClick
     }
   }
 }
@@ -119,40 +115,39 @@ export default {
 
 .content {
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   max-width: 80%;
   white-space: pre-wrap;
 }
 
 .user-message .content {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
 }
 
 .assistant-message .content {
-  background: #f8f9fa;
+  background: #152238;
+  border: 1px solid var(--color-border);
 }
 
 .system-message .content {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--color-danger-soft);
+  color: #ffd4d8;
 }
 
-/* 代码块容器 */
 .code-block {
   margin: 1rem 0;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #2d2d2d;
+  border: 1px solid #2f3c54;
 }
 
-/* 代码头部 */
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: #2d2d2d;
+  background: #1c2a43;
   color: #e0e0e0;
 }
 
@@ -163,8 +158,8 @@ export default {
 }
 
 .copy-btn {
-  background: #404040;
-  border: none;
+  background: #2a3d5d;
+  border: 1px solid #3e5478;
   color: #e0e0e0;
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
@@ -174,12 +169,11 @@ export default {
 }
 
 .copy-btn:hover {
-  background: #505050;
+  background: #324a72;
 }
 
-/* 代码块样式 */
 .code-content :deep(pre) {
-  background: #1e1e1e;
+  background: #0f1727;
   margin: 0;
   padding: 1rem;
   overflow-x: auto;
@@ -195,7 +189,6 @@ export default {
   margin: 0.5rem 0;
 }
 
-/* 行内代码样式 */
 .code-content :deep(code:not(.hljs)) {
   background: rgba(0,0,0,0.06);
   padding: 0.2em 0.4em;
@@ -203,9 +196,8 @@ export default {
   font-size: 0.9em;
 }
 
-/* 暗色主题适配 */
 .assistant-message .content {
-  background: #f8f9fa;
+  background: #152238;
 }
 
 .code-content :deep(.hljs) {

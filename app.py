@@ -1,13 +1,27 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 import uvicorn
 from models.model_factory import ModelFactory
 from models.database import Database
-from datetime import datetime
+import os
 
 app = FastAPI()
 db = Database()
+
+raw_origins = os.getenv("CORS_ORIGINS", "*")
+allow_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+if not allow_origins:
+    allow_origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatMessage(BaseModel):
     message: str
@@ -20,6 +34,10 @@ class ConversationResponse(BaseModel):
     assistant_message: str
     model_name: str
     created_at: str
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
 
 @app.post("/api/chat")
 async def chat(chat_message: ChatMessage):
